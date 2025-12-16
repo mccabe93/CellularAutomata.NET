@@ -1,0 +1,5 @@
+<Solution>
+  <Project Path="CellularAutomata.NET/CellularAutomata.NET.csproj" />
+  <Project Path="Conway/Conway.csproj" />
+  <Project Path="Wolfram/Wolfram.csproj" />
+</Solution>
