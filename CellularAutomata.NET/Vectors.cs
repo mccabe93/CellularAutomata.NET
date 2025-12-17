@@ -7,7 +7,7 @@ namespace CellularAutomata.NET
 {
     public static class AutomataVector
     {
-        private static readonly int _simdSize = Vector<int>.Count;
+        public static readonly int SIMD_SIZE = Vector<int>.Count;
 
         public static Vector<int> Create(params int[] vals)
         {
@@ -17,23 +17,42 @@ namespace CellularAutomata.NET
                     "At least one value must be provided to create a Vector."
                 );
             }
-            if (vals.Length > _simdSize)
+            if (vals.Length > SIMD_SIZE)
             {
-                throw new ArgumentException($"Exceeded CPU's SIMD size {_simdSize}.");
+                throw new ArgumentException($"Exceeded CPU's SIMD size {SIMD_SIZE}.");
             }
-            int[] dimensionValues = new int[_simdSize];
+            int[] dimensionValues = new int[SIMD_SIZE];
             for (int i = 0; i < vals.Length; i++)
             {
                 dimensionValues[i] = vals[i];
             }
             return new Vector<int>(dimensionValues);
         }
-    }
 
-    public static class VectorExtensions
-    {
-        public static int GetX(this Vector<int> vector) => vector[0];
+        public static bool IsInBounds(Vector<int> vector, int[] dimensions)
+        {
+            for (int i = 0; i < dimensions.Length; i++)
+            {
+                int value = vector.GetElement(i);
+                if (value < 0 || value >= dimensions[i])
+                {
+                    return false;
+                }
+            }
+            return true;
+        }
 
-        public static int GetY(this Vector<int> vector) => vector[1];
+        public static bool IsInBounds(Vector<int> vector, CellularAutomataDimension[] dimensions)
+        {
+            for (int i = 0; i < dimensions.Length; i++)
+            {
+                int value = vector.GetElement(i);
+                if (value < 0 || value >= dimensions[i].Cells)
+                {
+                    return false;
+                }
+            }
+            return true;
+        }
     }
 }

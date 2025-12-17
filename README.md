@@ -11,47 +11,45 @@ There are two examples included in the project.
 
 ## Usage
 
-Currently we only allow for 2D cellular automata. An extension to 3D+ is the next step. The goal is to handle up to 8D, or whatever your SIMD limitation is for vectors.
-
-**Please note when this changes the CellularAutomataConfiguration class will suffer a breaking change.**
+This framework allows for N-dimensional cellular automata. The limit varies based on your SIMD limitation for vectors.
 
 Each automata has a Rule function which is applied to each cell each step. From Conway's Game of Life example:
 
 ```cs
-        public static readonly Action<
-            CellularAutomataCell<int>,
-            Dictionary<Vector<int>, CellularAutomataCell<int>>,
-            CellularAutomata<int>
-        > Rules = new Action<
-            CellularAutomataCell<int>,
-            Dictionary<Vector<int>, CellularAutomataCell<int>>,
-            CellularAutomata<int>
-        >(
-            (cell, neighbors, automata) =>
-            {
-                // https://en.wikipedia.org/wiki/Conway%27s_Game_of_Life#Rules
-                if (neighbors.Count == 0)
-                {
-                    return;
-                }
-                int livingNeighbors = neighbors.Sum(t => t.Value.State);
-                if (cell.State == 1)
-                {
-                    if (livingNeighbors < 2 || livingNeighbors > 3)
-                    {
-                        cell.SetState(0);
-                    }
-                }
-                else if (livingNeighbors == 3)
-                {
-                    cell.SetState(1);
-                }
-                else
-                {
-                    cell.SetState(0);
-                }
-            }
-        );
+public static readonly Action<
+	CellularAutomataCell<int>,
+	Dictionary<Vector<int>, CellularAutomataCell<int>>,
+	CellularAutomata<int>
+	> Rules = new Action<
+	CellularAutomataCell<int>,
+	Dictionary<Vector<int>, CellularAutomataCell<int>>,
+	CellularAutomata<int>
+>(
+	(cell, neighbors, automata) =>
+	{
+		// https://en.wikipedia.org/wiki/Conway%27s_Game_of_Life#Rules
+		if (neighbors.Count == 0)
+		{
+			return;
+		}
+		int livingNeighbors = neighbors.Sum(t => t.Value.State);
+		if (cell.State == 1)
+		{
+			if (livingNeighbors < 2 || livingNeighbors > 3)
+			{
+				cell.SetState(0);
+			}
+		}
+		else if (livingNeighbors == 3)
+		{
+			cell.SetState(1);
+		}
+		else
+		{
+			cell.SetState(0);
+		}
+	}
+);
 ```
 
 The Func passes the cell being examined, a dictionary of its neighbors (with their relative positions) and the automata that called the function.
@@ -61,24 +59,24 @@ In this example, we look at the neighbors of our cell and sum up their State val
 The next piece of an automata is its configuration.
 
 ```cs
-            CellularAutomataConfiguration<int> config = new CellularAutomataConfiguration<int>
-            {
-                Width = 48,
-                Height = 48,
-                DefaultState = 0
-            };
+CellularAutomataConfiguration<int> config = new CellularAutomataConfiguration<int>
+{
+	new CellularAutomataDimension { Cells = 48 },
+	new CellularAutomataDimension { Cells = 48 },
+	DefaultState = 0
+};
 ```
 
-We specify the width and height of our grid and its default state. There are some other properties available such as WrappedRows, WrappedColumns, etc. For this Game of Life we're not wrapping.
+We specify the two dimensions of our grid and the default state of a cell. Dimensions contain properties for WrappedStart and WrappedEnd, but for this Game of Life we're not wrapping.
 
-For this example, we use the predefined [Moore neighborhood](https://en.wikipedia.org/wiki/Moore_neighborhood). This simplifies the process of starting up our automaton.
+We'll also use the predefined [Moore neighborhood](https://en.wikipedia.org/wiki/Moore_neighborhood). This simplifies the process of starting up our automaton. You can reference the Wolfram example for a custom neighborhood configuration.
 
 ```cs
-            CellularAutomata<int> automaton = new CellularAutomata<int>(
-                config,
-                CellularAutomataNeighborhood<int>.MooreNeighborhood,
-                Rules
-            );
+CellularAutomata<int> automaton = new CellularAutomata<int>(
+	config,
+	CellularAutomataNeighborhood<int>.MooreNeighborhood,
+	Rules
+	);
 ```
 
 Now we set our initial state and start steppin'.

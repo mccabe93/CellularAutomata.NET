@@ -10,8 +10,6 @@ namespace CellularAutomata.NET
     {
         public T State { get; private set; } = startState;
         public Vector<int> Position { get; set; }
-        public int X => Position.GetX();
-        public int Y => Position.GetY();
         public Dictionary<Vector<int>, CellularAutomataCell<T>> Neighbors { get; } =
             new Dictionary<Vector<int>, CellularAutomataCell<T>>();
         public List<T> StateHistory { get; set; } = new List<T>();

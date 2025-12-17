@@ -26,8 +26,7 @@ namespace CellularAutomata.NET
         > Rules = rules;
 
         public readonly CellularAutomataGrid<T> Grid = new CellularAutomataGrid<T>(
-            configuration.Width,
-            configuration.Height,
+            configuration.Dimensions,
             configuration.DefaultState
         );
 
@@ -52,14 +51,17 @@ namespace CellularAutomata.NET
             {
                 Vector<int> pos = kvp.Key;
                 T stateValue = kvp.Value;
-                if (
-                    pos.GetX() < 0
-                    || pos.GetY() < 0
-                    || pos.GetX() >= configuration.Width
-                    || pos.GetY() >= configuration.Height
-                )
+                for (int i = 0; i < configuration.Dimensions.Length; i++)
                 {
-                    throw new ArgumentException($"Position {pos} is out of bounds for the grid.");
+                    if (
+                        kvp.Key.GetElement(i) < 0
+                        || kvp.Key.GetElement(i) >= configuration.Dimensions[i].Cells
+                    )
+                    {
+                        throw new ArgumentException(
+                            $"Position {pos} is out of bounds for the grid."
+                        );
+                    }
                 }
                 Grid.State[pos].SetState(stateValue);
                 AddVisibleCell(Grid.State[pos]);

@@ -9,25 +9,21 @@ namespace CellularAutomata.NET
     public class CellularAutomataGrid<T>
         where T : notnull
     {
-        public readonly int Width;
-        public readonly int Height;
+        public readonly CellularAutomataDimension[] Dimensions;
         public readonly ImmutableDictionary<Vector<int>, CellularAutomataCell<T>> State;
 
-        public CellularAutomataGrid(int width, int height, T defaultState)
+        public CellularAutomataGrid(CellularAutomataDimension[] dimensions, T defaultState)
         {
-            Width = width;
-            Height = height;
-            State = CreateState(width, height, defaultState);
+            Dimensions = dimensions;
+            State = CreateState(dimensions, defaultState);
         }
 
         public CellularAutomataGrid(
-            int width,
-            int height,
+            CellularAutomataDimension[] dimensions,
             ImmutableDictionary<Vector<int>, CellularAutomataCell<T>> existingState
         )
         {
-            Width = width;
-            Height = height;
+            Dimensions = dimensions;
             State = CreateState(existingState);
         }
 
@@ -43,16 +39,11 @@ namespace CellularAutomata.NET
 
         public CellularAutomataCell<T>? GetCell(Vector<int> position)
         {
-            if (
-                position.GetX() < 0
-                || position.GetY() < 0
-                || position.GetX() >= Width
-                || position.GetY() >= Height
-            )
+            if (AutomataVector.IsInBounds(position, Dimensions))
             {
-                return null;
+                return State[position];
             }
-            return State[position];
+            return null;
         }
 
         internal void UpdateGridStates()
@@ -65,44 +56,117 @@ namespace CellularAutomata.NET
 
         public CellularAutomataGrid<T> Copy()
         {
-            return new CellularAutomataGrid<T>(Width, Height, State);
+            return new CellularAutomataGrid<T>(Dimensions, State);
         }
 
+        /// <summary>
+        /// Note that this will flatten the output into a single line string.
+        /// </summary>
+        /// <returns></returns>
         public override string ToString()
         {
             StringBuilder sb = new StringBuilder();
-            for (int x = 0; x < Height; x++)
+            var orderedCells = State.Values.OrderBy(c =>
             {
-                for (int y = 0; y < Width; y++)
+                int magnitude = 0;
+                for (int i = 0; i < Dimensions.Length; i++)
                 {
-                    sb.Append(State[AutomataVector.Create(y, x)].State);
-                    if (y < Width - 1)
-                    {
-                        sb.Append(" ");
-                    }
+                    magnitude +=
+                        c.Position.GetElement(i) * (int)Math.Pow(AutomataVector.SIMD_SIZE, i);
                 }
-                sb.AppendLine();
+                return magnitude;
+            });
+            foreach (var cell in orderedCells)
+            {
+                sb.Append(cell.State.ToString());
             }
             return sb.ToString();
         }
 
+        private static List<Vector<int>> CreateDimension(
+            CellularAutomataDimension[] dimensions,
+            int currentDimension,
+            Vector<int> currentVector,
+            List<Vector<int>> vectors
+        )
+        {
+            if (currentDimension >= dimensions.Length)
+            {
+                vectors.Add(currentVector);
+                return vectors;
+            }
+            for (int i = 0; i < dimensions[currentDimension].Cells; i++)
+            {
+                Vector<int> newVector = AutomataVector.Create(dimensions.Length);
+                for (int d = 0; d < dimensions.Length; d++)
+                {
+                    if (d == currentDimension)
+                    {
+                        continue;
+                    }
+                    newVector = newVector.WithElement(d, currentVector.GetElement(d));
+                }
+                newVector = newVector.WithElement(currentDimension, i);
+                CreateDimension(dimensions, currentDimension + 1, newVector, vectors);
+            }
+            return vectors;
+        }
+
         private static ImmutableDictionary<Vector<int>, CellularAutomataCell<T>> CreateState(
-            int width,
-            int height,
+            CellularAutomataDimension[] dimensions,
             T defaultState
         )
         {
-            var state = ImmutableDictionary.CreateBuilder<Vector<int>, CellularAutomataCell<T>>();
-            for (int x = 0; x < width; x++)
+            if (dimensions == null || dimensions.Length == 0)
             {
-                for (int y = 0; y < height; y++)
-                {
-                    Vector<int> position = AutomataVector.Create(x, y);
-                    state.Add(
-                        position,
-                        new CellularAutomataCell<T>(defaultState) { Position = position }
-                    );
-                }
+                throw new ArgumentException("Dimensions must be greater than zero.");
+            }
+            // Algorithm for n-dimensional grid creation using x,y,z example...
+            // Note: we replicate nested for loops with recursion, since we do not know the number of dimensions at compile time.
+            // recursively call =>
+            //                  if currentDimension >= dimensions.Length
+            //                  for loop from 0 to longest dimension, filling with the last value of the current dimension if exceeded
+            // [4, 3, 2]
+            // Desired output:
+            // x,y
+            // [0,0,0], [1,0,0], [2,0,0], [3,0,0]
+            // [0,1,0], [1,1,0], [2,1,0], [3,1,0]
+            // [0,2,0], [1,2,0], [2,2,0], [3,2,0]
+            // z(1)
+            // [0,0,1], [1,0,1], [2,0,1], [3,0,1]
+            // [0,1,1], [1,1,1], [2,1,1], [3,1,1]
+            // [0,2,1], [1,2,1], [2,2,1], [3,2,1]
+            // [0,3,1], [1,3,1], [2,3,1], [3,3,1]
+            //
+            // Recursive logic:
+            // Longest dimension is 4
+            // Start with dimension 0 (x)
+            // -> r(x)
+            //    for i = 0 ... 3
+            //        create vector <0,0,0>
+            //         -> r(y)
+            //            for j = 0 ... 2
+            //                create vector <0,1,0>
+            //                 -> r(z)
+            //                    for k = 0 ... 1
+            //                        create vectors <0,1,0> .. <0,1,1> (if k >= 2, use 1)
+            //                        r(a) -> a >= dimensions -> add to list
+            //                        ...
+            //                  <- r(z) <0,0,0>, <0,0,1>
+            //          <- r(y) <0,0,0>, <0,1,0>, <0,2,0>, (and z values) <0,0,1>, <0,1,1>, <0,2,1>
+            //        create vector <1,0,0>
+            //          <- r(y) <1,0,0>, <1,1,0>, <1,2,0>, <1,0,1>, <1,1,1>, <1,2,1>
+            //        ...
+            var state = ImmutableDictionary.CreateBuilder<Vector<int>, CellularAutomataCell<T>>();
+            List<Vector<int>> vectors = CreateDimension(
+                dimensions,
+                0,
+                AutomataVector.Create(dimensions.Length),
+                new List<Vector<int>>()
+            );
+            foreach (var vector in vectors)
+            {
+                state.Add(vector, new CellularAutomataCell<T>(defaultState) { Position = vector });
             }
             return state.ToImmutable();
         }

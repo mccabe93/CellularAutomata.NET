@@ -1,4 +1,5 @@
 ﻿using System.Numerics;
+using System.Text;
 using CellularAutomata.NET;
 
 namespace Wolfram
@@ -61,8 +62,11 @@ namespace Wolfram
         {
             CellularAutomataConfiguration<int> config = new CellularAutomataConfiguration<int>
             {
-                Width = 1024,
-                Height = 256,
+                Dimensions = new CellularAutomataDimension[]
+                {
+                    new CellularAutomataDimension() { Cells = 1024 },
+                    new CellularAutomataDimension() { Cells = 256 },
+                },
                 DefaultState = 0,
             };
             CellularAutomataNeighborhood<int> neighborhood = new CellularAutomataNeighborhood<int>()
@@ -74,8 +78,6 @@ namespace Wolfram
                     aboveRight,
                 },
                 ClearNeighborsAfterUse = true,
-                WrapColumns = false,
-                WrapRows = false,
             };
 
             CellularAutomata<int> automaton = new CellularAutomata<int>(
@@ -98,7 +100,23 @@ namespace Wolfram
                 Console.Write($"\rStep {i + 1}/256");
                 automaton.Step();
             }
-            Console.WriteLine(automaton.Grid);
+            Console.WriteLine(GetGridString(automaton));
+        }
+
+        private static string GetGridString(CellularAutomata<int> automaton)
+        {
+            StringBuilder sb = new StringBuilder();
+            for (int y = 0; y < automaton.Grid.Dimensions[1].Cells; y++)
+            {
+                for (int x = 0; x < automaton.Grid.Dimensions[0].Cells; x++)
+                {
+                    Vector<int> pos = AutomataVector.Create(x, y);
+                    CellularAutomataCell<int> cell = automaton.Grid.State[pos];
+                    sb.Append(cell.State.ToString());
+                }
+                sb.AppendLine();
+            }
+            return sb.ToString();
         }
     }
 }

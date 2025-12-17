@@ -44,8 +44,6 @@ namespace CellularAutomata.NET
             };
 
         public required Vector<int>[] NeighborLocations { get; set; }
-        public bool WrapColumns { get; set; } = false;
-        public bool WrapRows { get; set; } = false;
         public bool ClearNeighborsAfterUse { get; set; } = true;
 
         public void GetNeighbors(
@@ -62,19 +60,18 @@ namespace CellularAutomata.NET
             for (int i = 0; i < NeighborLocations.Length; i++)
             {
                 Vector<int> neighborPos = position + NeighborLocations[i];
-                if (WrapColumns && (neighborPos.GetX() >= grid.Width || neighborPos.GetX() < 0))
+
+                for (int d = 0; d < grid.Dimensions.Length; d++)
                 {
-                    neighborPos = AutomataVector.Create(
-                        neighborPos.GetX() % grid.Width,
-                        neighborPos.GetY()
-                    );
-                }
-                if (WrapRows && (neighborPos.GetY() >= grid.Height || neighborPos.GetY() < 0))
-                {
-                    neighborPos = AutomataVector.Create(
-                        neighborPos.GetX(),
-                        neighborPos.GetY() % grid.Height
-                    );
+                    CellularAutomataDimension dimension = grid.Dimensions[d];
+                    if (dimension.WrapStart && neighborPos.GetElement(d) < 0)
+                    {
+                        neighborPos = neighborPos.WithElement(d, dimension.Cells - 1);
+                    }
+                    if (dimension.WrapEnd && neighborPos.GetElement(d) >= dimension.Cells)
+                    {
+                        neighborPos = neighborPos.WithElement(d, 0);
+                    }
                 }
                 if (IsValidPosition(neighborPos, grid))
                 {
@@ -85,10 +82,7 @@ namespace CellularAutomata.NET
 
         private static bool IsValidPosition(Vector<int> pos, CellularAutomataGrid<T> grid)
         {
-            return pos.GetX() >= 0
-                && pos.GetY() >= 0
-                && pos.GetX() < grid.Width
-                && pos.GetY() < grid.Height;
+            return AutomataVector.IsInBounds(pos, grid.Dimensions);
         }
     }
 }

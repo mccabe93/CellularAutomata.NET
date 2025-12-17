@@ -1,4 +1,5 @@
 ﻿using System.Numerics;
+using System.Text;
 using CellularAutomata.NET;
 
 namespace Conway
@@ -44,8 +45,11 @@ namespace Conway
         {
             CellularAutomataConfiguration<int> config = new CellularAutomataConfiguration<int>
             {
-                Width = 48,
-                Height = 48,
+                Dimensions = new CellularAutomataDimension[]
+                {
+                    new CellularAutomataDimension { Cells = 48 },
+                    new CellularAutomataDimension { Cells = 48 },
+                },
                 DefaultState = 0,
             };
 
@@ -78,14 +82,29 @@ namespace Conway
             int stepsToEnd = 45 * 4;
 
             automaton.InitializeGrid(initialState);
-            Console.ReadLine();
 
             int step = 0;
             while (step <= stepsToEnd)
             {
-                Console.WriteLine($"Step {step++}/{stepsToEnd}\n{automaton.Grid}");
+                Console.WriteLine($"Step {step++}/{stepsToEnd}\n{GetGridString(automaton)}");
                 automaton.Step();
             }
+        }
+
+        private static string GetGridString(CellularAutomata<int> automaton)
+        {
+            StringBuilder sb = new StringBuilder();
+            for (int y = 0; y < automaton.Grid.Dimensions[1].Cells; y++)
+            {
+                for (int x = 0; x < automaton.Grid.Dimensions[0].Cells; x++)
+                {
+                    Vector<int> pos = AutomataVector.Create(x, y);
+                    CellularAutomataCell<int> cell = automaton.Grid.State[pos];
+                    sb.Append(cell.State.ToString());
+                }
+                sb.AppendLine();
+            }
+            return sb.ToString();
         }
     }
 }
