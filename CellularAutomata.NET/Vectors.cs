@@ -54,5 +54,32 @@ namespace CellularAutomata.NET
             }
             return true;
         }
+
+        /// <summary>
+        /// Adds depth to specified dimensions of a vector over a range.
+        /// </summary>
+        /// <param name="vector"></param>
+        /// <param name="startDepth">Start depth value for the dimension</param>
+        /// <param name="endDepth">End depth value for the dimension</param>
+        /// <param name="dimensionsToExtrude">1-based index. e.g 3rd dimension = 3</param>
+        /// <returns></returns>
+        public static List<Vector<int>> Extrude(
+            Vector<int> vector,
+            int startDepth,
+            int endDepth,
+            params int[] dimensionsToExtrude
+        )
+        {
+            List<Vector<int>> extrudedVectors = new List<Vector<int>>();
+            for (int i = startDepth; i <= endDepth; i++)
+            {
+                foreach (var d in dimensionsToExtrude)
+                {
+                    vector = vector.WithElement(d - 1, i);
+                }
+                extrudedVectors.Add(vector);
+            }
+            return extrudedVectors;
+        }
     }
 }

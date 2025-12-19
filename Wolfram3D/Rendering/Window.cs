@@ -30,7 +30,7 @@ namespace Wolfram3D.Rendering
         private Vector3 _cameraFront = new Vector3(0.0f, 0.0f, -1.0f);
         private Vector3 _cameraUp = Vector3.UnitY;
         private Vector3 _cameraDirection = Vector3.Zero;
-        private Texture? _texture;
+        private Texture[]? _textures;
         private Shader? _shader;
         private float _cameraYaw = -90f;
         private float _cameraPitch = 0f;
@@ -135,12 +135,16 @@ namespace Wolfram3D.Rendering
 
             _shader = new Shader(_gl, "shader.vert", "shader.frag");
 
-            _texture = new Texture(_gl, "Textures/Ground_01.png");
+            _textures = new Texture[4];
+            for (int i = 1; i <= 4; i++)
+            {
+                _textures[i - 1] = new Texture(_gl, $"Textures/Ground_0{i}.png");
+            }
         }
 
         private void OnRender(double deltaTime)
         {
-            if (_texture == null)
+            if (_textures == null)
             {
                 throw new InvalidProgramException("Texture not initialized.");
             }
@@ -153,7 +157,6 @@ namespace Wolfram3D.Rendering
             _gl.Enable(EnableCap.DepthTest);
             _gl.Clear((uint)(ClearBufferMask.ColorBufferBit | ClearBufferMask.DepthBufferBit));
 
-            _texture.Bind();
             _shader.Use();
             _shader.SetUniform("uTexture0", 0);
 
@@ -182,6 +185,8 @@ namespace Wolfram3D.Rendering
 
             foreach (var cube in _wolframCubes)
             {
+                _textures[cube.GetHashCode() % _textures.Length].Bind();
+                //_texture.Bind();
                 cube.Vao.Bind();
                 var size = _window.FramebufferSize;
 
@@ -275,7 +280,10 @@ namespace Wolfram3D.Rendering
                 cube.Vao.Dispose();
             }
             _shader?.Dispose();
-            _texture?.Dispose();
+            foreach (var texture in _textures ?? Array.Empty<Texture>())
+            {
+                texture.Dispose();
+            }
         }
     }
 }

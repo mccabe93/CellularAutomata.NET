@@ -10,9 +10,24 @@ namespace Wolfram3D
     // Textures: https://opengameart.org/content/tileable-bricks-ground-textures-set-1
     internal class Program
     {
-        private static Vector<int> aboveLeft = AutomataVector.Create(-1, -1, 0);
-        private static Vector<int> above = AutomataVector.Create(0, -1, 0);
-        private static Vector<int> aboveRight = AutomataVector.Create(1, -1, 0);
+        private static List<Vector<int>> aboveLeft = AutomataVector.Extrude(
+            AutomataVector.Create(-1, -1, 0),
+            -1,
+            1,
+            3
+        );
+        private static List<Vector<int>> above = AutomataVector.Extrude(
+            AutomataVector.Create(0, -1, 0),
+            -1,
+            1,
+            3
+        );
+        private static List<Vector<int>> aboveRight = AutomataVector.Extrude(
+            AutomataVector.Create(1, -1, 0),
+            -1,
+            1,
+            3
+        );
 
         public static readonly Action<
             CellularAutomataCell<int>,
@@ -29,29 +44,61 @@ namespace Wolfram3D
                 {
                     return;
                 }
-                int leftNeighbor = neighbors.TryGetValue(aboveLeft, out var leftCell)
-                    ? leftCell.State
-                    : 0;
-                int centerNeighbor = neighbors.TryGetValue(above, out var centerCell)
-                    ? centerCell.State
-                    : 0;
-                int rightNeighbor = neighbors.TryGetValue(aboveRight, out var rightCell)
-                    ? rightCell.State
-                    : 0;
+                int leftNeighborValue = 0;
+                foreach (var leftNeighbor in aboveLeft)
+                {
+                    leftNeighborValue = Math.Max(
+                        leftNeighborValue,
+                        neighbors.TryGetValue(leftNeighbor, out var leftCell) ? leftCell.State : 0
+                    );
+                }
+                int rightNeighborValue = 0;
+                foreach (var rightNeighbor in aboveRight)
+                {
+                    rightNeighborValue = Math.Max(
+                        rightNeighborValue,
+                        neighbors.TryGetValue(rightNeighbor, out var rightCell)
+                            ? rightCell.State
+                            : 0
+                    );
+                }
+
+                int centerNeighborValue = 0;
+                foreach (var centerNeighbor in above)
+                {
+                    centerNeighborValue = Math.Max(
+                        centerNeighborValue,
+                        neighbors.TryGetValue(centerNeighbor, out var centerCell)
+                            ? centerCell.State
+                            : 0
+                    );
+                }
                 // https://en.wikipedia.org/wiki/Rule_30#Rule_set
-                if (leftNeighbor == 1 && centerNeighbor == 0 && rightNeighbor == 0)
+                if (leftNeighborValue == 1 && centerNeighborValue == 0 && rightNeighborValue == 0)
                 {
                     cell.SetState(1);
                 }
-                else if (leftNeighbor == 0 && centerNeighbor == 1 && rightNeighbor == 1)
+                else if (
+                    leftNeighborValue == 0
+                    && centerNeighborValue == 1
+                    && rightNeighborValue == 1
+                )
                 {
                     cell.SetState(1);
                 }
-                else if (leftNeighbor == 0 && centerNeighbor == 1 && rightNeighbor == 0)
+                else if (
+                    leftNeighborValue == 0
+                    && centerNeighborValue == 1
+                    && rightNeighborValue == 0
+                )
                 {
                     cell.SetState(1);
                 }
-                else if (leftNeighbor == 0 && centerNeighbor == 0 && rightNeighbor == 1)
+                else if (
+                    leftNeighborValue == 0
+                    && centerNeighborValue == 0
+                    && rightNeighborValue == 1
+                )
                 {
                     cell.SetState(1);
                 }
@@ -74,14 +121,14 @@ namespace Wolfram3D
                 },
                 DefaultState = 0,
             };
+
+            List<Vector<int>> extrudedNeighborhood = new List<Vector<int>>();
+            extrudedNeighborhood.AddRange(aboveLeft);
+            extrudedNeighborhood.AddRange(above);
+            extrudedNeighborhood.AddRange(aboveRight);
             CellularAutomataNeighborhood<int> neighborhood = new CellularAutomataNeighborhood<int>()
             {
-                NeighborLocations = new System.Numerics.Vector<int>[]
-                {
-                    aboveLeft,
-                    above,
-                    aboveRight,
-                },
+                NeighborLocations = extrudedNeighborhood.ToArray(),
                 ClearNeighborsAfterUse = true,
             };
 
@@ -96,8 +143,7 @@ namespace Wolfram3D
                 int
             >()
             {
-                { AutomataVector.Create(64, 0, 0), 1 },
-                { AutomataVector.Create(0, 0, 64), 1 },
+                { AutomataVector.Create(64, 0, 64), 1 },
             };
 
             automaton.InitializeGrid(initialState);
