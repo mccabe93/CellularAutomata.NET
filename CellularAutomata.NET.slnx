@@ -1,6 +1,7 @@
 <Solution>
   <Project Path="CellularAutomata.NET/CellularAutomata.NET.csproj" />
   <Project Path="Conway/Conway.csproj" />
+  <Project Path="ReverseRuleBuilder/ReverseRuleBuilder.csproj" Id="d68581dd-ead3-427d-9b79-135c45183531" />
   <Project Path="Wolfram/Wolfram.csproj" />
   <Project Path="Wolfram3D/Wolfram3D.csproj" Id="b56e6d9e-7985-4554-85dc-13345d021fc0" />
 </Solution>

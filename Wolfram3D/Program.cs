@@ -1,4 +1,5 @@
 ﻿using System.Numerics;
+using System.Threading.Tasks;
 using CellularAutomata.NET;
 using Silk.NET.Maths;
 using Silk.NET.Windowing;
@@ -10,6 +11,19 @@ namespace Wolfram3D
     // Textures: https://opengameart.org/content/tileable-bricks-ground-textures-set-1
     internal class Program
     {
+        private static CancellationTokenSource _cancelToken = new CancellationTokenSource();
+        private static Wolfram3DWindow _window = new Wolfram3DWindow(800, 800, 0.01f);
+
+        static async Task Main(string[] args)
+        {
+            _window.OnLoaded = () =>
+            {
+                Task.Factory.StartNew(() => RunAutomata(), _cancelToken.Token);
+            };
+            _window.Start();
+            await _cancelToken.CancelAsync();
+        }
+
         private static List<Vector<int>> aboveLeft = AutomataVector.Extrude(
             AutomataVector.Create(-1, -1, 0),
             -1,
@@ -109,7 +123,7 @@ namespace Wolfram3D
             }
         );
 
-        static void Main(string[] args)
+        private static void RunAutomata()
         {
             CellularAutomataConfiguration<int> config = new CellularAutomataConfiguration<int>
             {
@@ -145,16 +159,20 @@ namespace Wolfram3D
             {
                 { AutomataVector.Create(64, 0, 64), 1 },
             };
-
             automaton.InitializeGrid(initialState);
+            _window.UpdateState(automaton.Grid);
             for (int i = 0; i < 32; i++)
             {
                 Console.Write($"\rStep {i + 1}/32");
                 automaton.Step();
+                _window.UpdateState(automaton.Grid);
             }
+        }
 
-            Wolfram3DWindow window = new Wolfram3DWindow(800, 800, automaton.Grid, 0.01f);
-            window.Start();
+        ~Program()
+        {
+            _cancelToken.Cancel();
+            _cancelToken.Dispose();
         }
     }
 }

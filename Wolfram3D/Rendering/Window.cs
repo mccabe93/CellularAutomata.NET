@@ -11,17 +11,17 @@ using Silk.NET.Windowing;
 namespace Wolfram3D.Rendering
 {
     // Reference: https://github.com/dotnet/Silk.NET/blob/main/examples/CSharp/OpenGL%20Tutorials/Tutorial%202.2%20-%20Camera/Program.cs
-    internal class Wolfram3DWindow(
-        int width,
-        int height,
-        CellularAutomataGrid<int> cells,
-        float cubeSize = 1f
-    )
+    internal class Wolfram3DWindow(int width, int height, float cubeSize = 1f)
     {
+        public Action? OnLoaded { get; set; }
+        public bool Loaded { get; private set; } = false;
+
+        private CellularAutomataGrid<int>? _currentGrid;
+        private CellularAutomataGrid<int>? _previousGrid;
+        private volatile bool _gridChanged = false;
         private GL _gl;
         private IKeyboard? primaryKeyboard;
 
-        private readonly CellularAutomataGrid<int> _cells = cells;
         private readonly float _cubeSize = cubeSize;
         private readonly HashSet<Wolfram3DCube> _wolframCubes = new HashSet<Wolfram3DCube>();
 
@@ -63,11 +63,25 @@ namespace Wolfram3D.Rendering
             _window.Run();
         }
 
-        public void LoadWolframCubes()
+        public void UpdateState(CellularAutomataGrid<int> newGrid)
         {
-            foreach (var cell in _cells.State)
+            if (_currentGrid != null)
             {
-                if (cell.Value.State == 1)
+                _previousGrid = _currentGrid.Copy();
+            }
+            _currentGrid = newGrid.Copy();
+            _gridChanged = true;
+        }
+
+        public void LoadWolframCubes(CellularAutomataGrid<int> grid)
+        {
+            foreach (var cell in grid.State)
+            {
+                if (
+                    cell.Value.State == 1
+                    // Only add new cubes
+                    && (_previousGrid == null || _previousGrid.GetCellValue(cell.Key) == 0)
+                )
                 {
                     var x = cell.Key[0] * _cubeSize;
                     var y = cell.Key[1] * _cubeSize;
@@ -131,8 +145,6 @@ namespace Wolfram3D.Rendering
 
             _gl = GL.GetApi(_window);
 
-            LoadWolframCubes();
-
             _shader = new Shader(_gl, "shader.vert", "shader.frag");
 
             _textures = new Texture[4];
@@ -140,6 +152,8 @@ namespace Wolfram3D.Rendering
             {
                 _textures[i - 1] = new Texture(_gl, $"Textures/Ground_0{i}.png");
             }
+            Loaded = true;
+            OnLoaded?.Invoke();
         }
 
         private void OnRender(double deltaTime)
@@ -157,6 +171,11 @@ namespace Wolfram3D.Rendering
             _gl.Enable(EnableCap.DepthTest);
             _gl.Clear((uint)(ClearBufferMask.ColorBufferBit | ClearBufferMask.DepthBufferBit));
 
+            if (_gridChanged)
+            {
+                LoadWolframCubes(_currentGrid);
+                _gridChanged = false;
+            }
             _shader.Use();
             _shader.SetUniform("uTexture0", 0);
 
@@ -186,7 +205,6 @@ namespace Wolfram3D.Rendering
             foreach (var cube in _wolframCubes)
             {
                 _textures[cube.GetHashCode() % _textures.Length].Bind();
-                //_texture.Bind();
                 cube.Vao.Bind();
                 var size = _window.FramebufferSize;
 
