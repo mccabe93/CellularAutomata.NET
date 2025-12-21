@@ -2,8 +2,8 @@
 
 Lightweight framework for generating cellular automata in .NET.
 
-![wolfram3d.webm](/_resources/wolfram3d.gif)
-[Rule 30](https://en.wikipedia.org/wiki/Rule_30#Rule_set) in 3 dimensions.
+![wolfram3d.webm](/_resources/wolfram3d.gif)  
+<sub>[Rule 30](https://en.wikipedia.org/wiki/Rule_30#Rule_set) in 3 dimensions.</sub>
 
 ## Examples
 
@@ -12,7 +12,7 @@ There are two examples included in the project.
 - Wolfram.csproj => Rule 30
 - Conway.csproj => Game of Life.
 - Wolfram3D.csproj => Rule 30 extruded to 3 dimensions. Rendered with SILK.Net
-- ReverseRuleBuilder.csproj => Example/research of reversing out the rules that match a 5 cell [elementary automata](https://en.wikipedia.org/wiki/Elementary_cellular_automaton) 
+- ReverseRuleBuilder.csproj => Example/research of reversing out the rules that match a given state for a 5 cell [elementary automata](https://en.wikipedia.org/wiki/Elementary_cellular_automaton) 
 
 ## Usage
 
