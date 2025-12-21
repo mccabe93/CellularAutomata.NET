@@ -2,7 +2,7 @@
 
 Lightweight framework for generating cellular automata in .NET.
 
-![wolfram3d.webm](/_resources/wolfram3d.webm)
+![wolfram3d.webm](/_resources/wolfram3d.gif)
 [Rule 30](https://en.wikipedia.org/wiki/Rule_30#Rule_set) in 3 dimensions.
 
 ## Examples
