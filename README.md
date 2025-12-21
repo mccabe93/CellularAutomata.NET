@@ -5,9 +5,15 @@ Lightweight framework for generating cellular automata in .NET.
 ![wolfram3d.gif](/_resources/wolfram3d.gif)  
 <sub>[Rule 30](https://en.wikipedia.org/wiki/Rule_30#Rule_set) in 3 dimensions.</sub>
 
+## Nuget
+You can install the CellularAutomata.NET package via NuGet:
+```bash
+dotnet add package CellularAutomata.NET
+```
+
 ## Examples
 
-There are two examples included in the project.
+The following examples are included in the project:
 
 - Wolfram.csproj => Rule 30
 - Conway.csproj => Game of Life.
@@ -119,6 +125,5 @@ while (step <= stepsToEnd)
 }
 ```
 
-![conway.gif](/_resources/conway.gif)
-
-Voila!
+![conway.gif](/_resources/conway.gif)  
+<sub>Voila!</sub>

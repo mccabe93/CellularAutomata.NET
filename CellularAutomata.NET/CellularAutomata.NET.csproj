@@ -4,7 +4,7 @@
     <ImplicitUsings>enable</ImplicitUsings>
     <Nullable>enable</Nullable>
     <Title>CellularAutomata.NET</Title>
-    <Version>10.0.0.1</Version>
+    <Version>10.0.0.2</Version>
     <Authors>Michael McCabe</Authors>
     <Company></Company>
     <Description>Lightweight framework for generating cellular automata in .NET.</Description>
