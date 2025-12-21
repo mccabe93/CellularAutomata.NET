@@ -1,11 +1,10 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
-
   <PropertyGroup>
     <TargetFramework>net10.0</TargetFramework>
     <ImplicitUsings>enable</ImplicitUsings>
     <Nullable>enable</Nullable>
     <Title>CellularAutomata.NET</Title>
-    <Version>10.0.0.0</Version>
+    <Version>10.0.0.1</Version>
     <Authors>Michael McCabe</Authors>
     <Company></Company>
     <Description>Lightweight framework for generating cellular automata in .NET.</Description>
@@ -15,16 +14,10 @@
     <PackageTags>cellular automata, .net</PackageTags>
     <GeneratePackageOnBuild>True</GeneratePackageOnBuild>
   </PropertyGroup>
-
   <ItemGroup>
-    <None Include="..\..\..\1130-Lab\CrossExchange.Doyen\README.md">
+    <None Include="..\README.md">
       <Pack>True</Pack>
       <PackagePath>\</PackagePath>
     </None>
   </ItemGroup>
-
-  <ItemGroup>
-    <PackageReference Include="Microsoft.CodeAnalysis.CSharp.Scripting" Version="5.0.0" />
-  </ItemGroup>
-
 </Project>

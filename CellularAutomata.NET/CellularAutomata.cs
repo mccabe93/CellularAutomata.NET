@@ -3,8 +3,6 @@ using System.Collections.Generic;
 using System.Collections.Immutable;
 using System.Numerics;
 using System.Text;
-using Microsoft.CodeAnalysis.CSharp.Scripting;
-using Microsoft.CodeAnalysis.Scripting;
 
 namespace CellularAutomata.NET
 {
