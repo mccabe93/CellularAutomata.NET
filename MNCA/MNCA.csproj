@@ -1,0 +1,32 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <OutputType>Exe</OutputType>
+    <TargetFramework>net10.0</TargetFramework>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <Nullable>enable</Nullable>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <None Remove="inner-neighborhood.bmp" />
+    <None Remove="outer-neighborhood.bmp" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Content Include="inner-neighborhood.bmp">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Content>
+    <Content Include="outer-neighborhood.bmp">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Content>
+  </ItemGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Spectre.Console" Version="0.54.0" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\CellularAutomata.NET.Bitmaps\CellularAutomata.NET.Bitmaps.csproj" />
+  </ItemGroup>
+
+</Project>
